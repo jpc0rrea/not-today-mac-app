@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nottoday.scheduler</string>
+
+    <key>Comment</key>
+    <string>NotToday - Automatic website blocking scheduler</string>
+
+    <!-- Run the check command every minute -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>$HOME/Library/Application Support/NotToday/nottoday-cli.sh check</string>
+    </array>
+
+    <!-- Run every minute -->
+    <key>StartInterval</key>
+    <integer>60</integer>
+
+    <!-- Also run at load -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep alive - restart if crashes -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- Log output -->
+    <key>StandardOutPath</key>
+    <string>/tmp/nottoday.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/nottoday.error.log</string>
+
+    <!-- Low priority -->
+    <key>LowPriorityIO</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

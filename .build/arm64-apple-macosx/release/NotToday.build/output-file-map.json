@@ -1,0 +1,79 @@
+{
+  "": {
+    "dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/NotToday.d",
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/NotToday.o",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/master.swiftdeps"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Config/PaddleConfig.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/PaddleConfig.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/PaddleConfig~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/PaddleConfig.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/PaddleConfig.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Models/Configuration.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/Configuration.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/Configuration~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/Configuration.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/Configuration.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Models/LicenseState.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseState.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseState~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseState.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseState.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/NotTodayApp.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/NotTodayApp.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/NotTodayApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/NotTodayApp.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/NotTodayApp.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Services/BlockingService.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/BlockingService.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/BlockingService~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/BlockingService.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/BlockingService.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Services/ConfigurationManager.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ConfigurationManager.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ConfigurationManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ConfigurationManager.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ConfigurationManager.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Services/LicenseManager.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseManager.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseManager.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseManager.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Services/ScheduleManager.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ScheduleManager.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ScheduleManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ScheduleManager.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/ScheduleManager.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Views/LicenseActivationView.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseActivationView.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseActivationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseActivationView.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/LicenseActivationView.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Views/MenuBarView.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/MenuBarView.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/MenuBarView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/MenuBarView.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/MenuBarView.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/NotToday/Sources/NotToday/Views/SettingsView.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/SettingsView.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/SettingsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/SettingsView.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/SettingsView.dia"
+  },
+  "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/DerivedSources/resource_bundle_accessor.swift": {
+    "object": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/resource_bundle_accessor.swift.o",
+    "swiftmodule": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/resource_bundle_accessor~partial.swiftmodule",
+    "swift-dependencies": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/resource_bundle_accessor.swiftdeps",
+    "diagnostics": "/Users/jpc0rrea/projects/jpc0rrea/not-today/mac-app/.build/arm64-apple-macosx/release/NotToday.build/resource_bundle_accessor.dia"
+  }
+}

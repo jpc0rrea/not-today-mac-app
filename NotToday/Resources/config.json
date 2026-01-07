@@ -1,0 +1,28 @@
+{
+  "enabled": true,
+  "blockedSites": [
+    "twitter.com",
+    "www.twitter.com",
+    "x.com",
+    "www.x.com",
+    "facebook.com",
+    "www.facebook.com",
+    "instagram.com",
+    "www.instagram.com",
+    "reddit.com",
+    "www.reddit.com",
+    "youtube.com",
+    "www.youtube.com",
+    "tiktok.com",
+    "www.tiktok.com",
+    "netflix.com",
+    "www.netflix.com"
+  ],
+  "schedule": {
+    "days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "startHour": 9,
+    "startMinute": 0,
+    "endHour": 19,
+    "endMinute": 0
+  }
+}

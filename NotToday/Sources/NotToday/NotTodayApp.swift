@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import ServiceManagement
+import UserNotifications
 
 @main
 struct NotTodayApp: App {
@@ -13,7 +14,7 @@ struct NotTodayApp: App {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var countdownTimer: Timer?
@@ -22,6 +23,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Hide dock icon - this is a menu bar only app
         NSApp.setActivationPolicy(.accessory)
 
+        // Setup notifications FIRST - before anything else
+        setupNotifications()
+
         // Enable launch at login automatically
         enableLaunchAtLogin()
 
@@ -29,6 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         _ = ConfigurationManager.shared
         _ = BlockingService.shared
         _ = ScheduleManager.shared
+        _ = HelperInstaller.shared  // Initialize helper installer
 
         // Setup menu bar
         setupMenuBar()
@@ -36,6 +41,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Check initial blocking state
         BlockingService.shared.checkCurrentStatus()
         ScheduleManager.shared.checkAndUpdateBlocking()
+
+        // Sync schedule to helper if installed
+        if HelperInstaller.shared.isHelperInstalled {
+            BlockingService.shared.syncScheduleToHelper(configuration: ConfigurationManager.shared.configuration)
+        }
+    }
+
+    // MARK: - Notifications Setup
+
+    private func setupNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+
+        // Request permission
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            DispatchQueue.main.async {
+                if granted {
+                    print("✅ Notification permission granted")
+                } else if let error = error {
+                    print("❌ Notification permission error: \(error.localizedDescription)")
+                } else {
+                    print("⚠️ Notification permission denied")
+                }
+            }
+        }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    // Show notifications even when app is in foreground
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
     }
 
     private func setupMenuBar() {
@@ -99,23 +144,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func updateStatusIcon() {
         guard let button = statusItem.button else { return }
 
-        // Load custom menu bar icon from bundle resources
-        // In SwiftPM, resources are in Bundle.module
-        if let iconURL = Bundle.module.url(forResource: "menubar_icon_22x22", withExtension: "png"),
-           let image = NSImage(contentsOf: iconURL) {
-            image.isTemplate = true  // Makes it adapt to light/dark mode
-            image.size = NSSize(width: 18, height: 18)
-            button.image = image
+        // Use SF Symbol for menu bar icon
+        let isBlocking = BlockingService.shared.isBlocking
+        if isBlocking {
+            button.image = NSImage(systemSymbolName: "hand.raised.fill", accessibilityDescription: "Blocking Active")
         } else {
-            // Fallback to system symbol if custom icon not found
-            let isBlocking = BlockingService.shared.isBlocking
-            if isBlocking {
-                button.image = NSImage(systemSymbolName: "hand.raised.fill", accessibilityDescription: "Blocking Active")
-            } else {
-                button.image = NSImage(systemSymbolName: "hand.raised", accessibilityDescription: "Blocking Inactive")
-            }
-            button.image?.isTemplate = true
+            button.image = NSImage(systemSymbolName: "hand.raised", accessibilityDescription: "Blocking Inactive")
         }
+        button.image?.isTemplate = true
     }
 
     @objc private func togglePopover() {

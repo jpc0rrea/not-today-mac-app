@@ -1,5 +1,6 @@
 # Build artifacts
 .build/
+NotToday.app/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
 DerivedData/

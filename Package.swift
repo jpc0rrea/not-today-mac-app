@@ -7,7 +7,8 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "NotToday", targets: ["NotToday"])
+        .executable(name: "NotToday", targets: ["NotToday"]),
+        .executable(name: "com.nottoday.helper", targets: ["NotTodayHelper"])
     ],
     targets: [
         .executableTarget(
@@ -20,6 +21,10 @@ let package = Package(
                 .copy("Resources/menubar_icon_22x22.png"),
                 .copy("Resources/menubar_icon_22x22@2x.png")
             ]
+        ),
+        .executableTarget(
+            name: "NotTodayHelper",
+            path: "Helper/Sources/NotTodayHelper"
         )
     ]
 )

@@ -37,16 +37,32 @@ class BlockingService: ObservableObject {
         setupDeactivateScript()
     }
 
+    // MARK: - Helper Check
+
+    /// Check if the privileged helper is installed and should be used
+    private var usePrivilegedHelper: Bool {
+        return HelperInstaller.shared.isHelperInstalled
+    }
+
     // MARK: - Status Check
 
     func checkCurrentStatus() {
-        guard let hostsContent = try? String(contentsOfFile: hostsPath, encoding: .utf8) else {
-            status = .error("Cannot read hosts file")
-            return
-        }
+        if usePrivilegedHelper {
+            // Use helper to check status
+            HelperConnection.shared.isBlockingActive { [weak self] isActive in
+                self?.isBlocking = isActive
+                self?.status = isActive ? .active : .inactive
+            }
+        } else {
+            // Fall back to direct hosts file check
+            guard let hostsContent = try? String(contentsOfFile: hostsPath, encoding: .utf8) else {
+                status = .error("Cannot read hosts file")
+                return
+            }
 
-        isBlocking = hostsContent.contains(blockMarkerStart)
-        status = isBlocking ? .active : .inactive
+            isBlocking = hostsContent.contains(blockMarkerStart)
+            status = isBlocking ? .active : .inactive
+        }
     }
 
     // MARK: - Blocking Operations
@@ -60,6 +76,26 @@ class BlockingService: ObservableObject {
 
         isActivationInProgress = true
 
+        if usePrivilegedHelper {
+            // Use the privileged helper - NO PASSWORD PROMPT
+            HelperConnection.shared.activateBlocking(sites: sites) { [weak self] success, error in
+                DispatchQueue.main.async {
+                    self?.isActivationInProgress = false
+                    if success {
+                        self?.isBlocking = true
+                        self?.status = .active
+                    } else {
+                        self?.status = .error(error ?? "Failed to activate blocking")
+                    }
+                }
+            }
+        } else {
+            // Fall back to AppleScript with password prompt
+            activateBlockingWithAppleScript(sites: sites)
+        }
+    }
+
+    private func activateBlockingWithAppleScript(sites: [String]) {
         let blockEntries = sites.map { "127.0.0.1 \($0)" }.joined(separator: "\n")
         let blockContent = """
 
@@ -95,6 +131,25 @@ class BlockingService: ObservableObject {
     }
 
     func deactivateBlocking() {
+        if usePrivilegedHelper {
+            // Use the privileged helper - NO PASSWORD PROMPT
+            HelperConnection.shared.deactivateBlocking { [weak self] success, error in
+                DispatchQueue.main.async {
+                    if success {
+                        self?.isBlocking = false
+                        self?.status = .inactive
+                    } else {
+                        self?.status = .error(error ?? "Failed to deactivate blocking")
+                    }
+                }
+            }
+        } else {
+            // Fall back to AppleScript with password prompt
+            deactivateBlockingWithAppleScript()
+        }
+    }
+
+    private func deactivateBlockingWithAppleScript() {
         let script = """
         #!/bin/bash
         # Remove NotToday entries
@@ -118,7 +173,9 @@ class BlockingService: ObservableObject {
         }
     }
 
-    /// Activate blocking with a scheduled deactivation - only prompts for password/TouchID ONCE
+    /// Activate blocking with a scheduled deactivation
+    /// When helper is installed: NO password prompt needed
+    /// When helper is not installed: Single password prompt for activation + scheduled deactivation
     func activateBlockingWithScheduledEnd(sites: [String], minutes: Int, completion: @escaping (Bool) -> Void) {
         // Prevent multiple simultaneous activations
         guard !isActivationInProgress else {
@@ -142,6 +199,52 @@ class BlockingService: ObservableObject {
 
         isActivationInProgress = true
 
+        if usePrivilegedHelper {
+            // Use the privileged helper - NO PASSWORD PROMPT
+            // The helper will handle the blocking and schedule
+            HelperConnection.shared.activateBlocking(sites: sites) { [weak self] success, error in
+                DispatchQueue.main.async {
+                    self?.isActivationInProgress = false
+                    if success {
+                        self?.isBlocking = true
+                        self?.status = .active
+
+                        // Schedule deactivation via helper (the helper monitors its own schedule)
+                        // For focus sessions, we'll create a one-time scheduled deactivation
+                        self?.scheduleDeactivationViaHelper(minutes: minutes)
+
+                        completion(true)
+                    } else {
+                        self?.status = .error(error ?? "Failed to activate blocking")
+                        completion(false)
+                    }
+                }
+            }
+        } else {
+            // Fall back to AppleScript-based activation with scheduled deactivation
+            activateBlockingWithScheduledEndAppleScript(sites: sites, minutes: minutes, completion: completion)
+        }
+    }
+
+    private func scheduleDeactivationViaHelper(minutes: Int) {
+        // For focus sessions, we schedule a timer to deactivate via the helper
+        // This runs in the app but the actual deactivation is passwordless via helper
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(minutes * 60)) { [weak self] in
+            guard let self = self else { return }
+
+            HelperConnection.shared.deactivateBlocking { success, _ in
+                if success {
+                    DispatchQueue.main.async {
+                        self.isBlocking = false
+                        self.status = .inactive
+                        NotificationCenter.default.post(name: NSNotification.Name("BlockingStatusChanged"), object: nil)
+                    }
+                }
+            }
+        }
+    }
+
+    private func activateBlockingWithScheduledEndAppleScript(sites: [String], minutes: Int, completion: @escaping (Bool) -> Void) {
         // Calculate end time - timer starts when user confirms authentication
         let endTime = Date().addingTimeInterval(Double(minutes * 60))
 
@@ -277,7 +380,7 @@ class BlockingService: ObservableObject {
         checkCurrentStatus()
     }
 
-    // MARK: - AppleScript Admin Execution
+    // MARK: - AppleScript Admin Execution (fallback when helper not installed)
 
     private func executeWithAdmin(script: String, completion: @escaping (Bool) -> Void) {
         // Write script to temp file
@@ -295,7 +398,7 @@ class BlockingService: ObservableObject {
         // Execute with admin privileges using AppleScript
         // TouchID support depends on system settings (System Settings > Touch ID & Password > Use Touch ID for sudo)
         let appleScript = """
-        do shell script "\(tempScript.path)" with administrator privileges with prompt "NotToday needs to modify system settings to block distracting websites."
+        do shell script "\(tempScript.path)" with administrator privileges with prompt "NotToday 2 needs to modify system settings to block distracting websites."
         """
 
         guard let scriptObject = NSAppleScript(source: appleScript) else {
@@ -446,5 +549,46 @@ class BlockingService: ObservableObject {
         }
 
         return sites
+    }
+
+    // MARK: - Schedule Sync with Helper
+
+    /// Sync the current schedule configuration to the privileged helper
+    func syncScheduleToHelper(configuration: Configuration) {
+        guard usePrivilegedHelper else { return }
+
+        // Convert Configuration schedule to HelperScheduleConfig
+        var daySchedules: [String: HelperDaySchedule] = [:]
+
+        for (day, schedule) in configuration.schedule.daySchedules {
+            // Convert TimeRange array to HelperTimeRange array
+            let helperTimeRanges = schedule.timeRanges.map { range in
+                HelperTimeRange(
+                    startHour: range.startHour,
+                    startMinute: range.startMinute,
+                    endHour: range.endHour,
+                    endMinute: range.endMinute
+                )
+            }
+
+            daySchedules[day.rawValue] = HelperDaySchedule(
+                enabled: schedule.enabled,
+                timeRanges: helperTimeRanges
+            )
+        }
+
+        let helperConfig = HelperScheduleConfig(
+            daySchedules: daySchedules,
+            enabled: configuration.enabled,
+            blockedSites: configuration.blockedSites
+        )
+
+        HelperConnection.shared.updateSchedule(config: helperConfig) { success, error in
+            if success {
+                print("Schedule synced to helper successfully")
+            } else {
+                print("Failed to sync schedule to helper: \(error ?? "unknown error")")
+            }
+        }
     }
 }

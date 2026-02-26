@@ -71,22 +71,40 @@ struct MenuBarView: View {
     }
 
     private var statusColor: Color {
-        if scheduleManager.sessionEndTime != nil {
-            return blockingService.isBlocking ? .red : .orange
+        // Always check actual blocking state first
+        if blockingService.isBlocking {
+            return .red
+        } else if scheduleManager.sessionEndTime != nil {
+            // Session requested but blocking not yet active
+            return .orange
         }
-        return blockingService.isBlocking ? .red : .green
+        return .green
     }
 
     private var statusText: String {
-        if scheduleManager.sessionEndTime != nil {
-            return blockingService.isBlocking ? "Focus Session Active" : "Focus Session Starting"
+        if blockingService.isBlocking {
+            if scheduleManager.sessionEndTime != nil {
+                return "Focus Session Active"
+            }
+            return "Blocking Active"
+        } else if scheduleManager.sessionEndTime != nil {
+            return "Starting..."
         }
-        return blockingService.isBlocking ? "Blocking Active" : "Blocking Inactive"
+        return "Blocking Inactive"
     }
 
     private var statusSubtext: String {
-        if scheduleManager.sessionEndTime != nil && !scheduleManager.remainingTime.isEmpty {
-            return "\(scheduleManager.remainingTime) remaining"
+        if blockingService.isBlocking {
+            if !scheduleManager.remainingTime.isEmpty {
+                return "\(scheduleManager.remainingTime) remaining"
+            } else if let endTime = configManager.configuration.schedule.nextDeactivation() {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "HH:mm"
+                return "Ends at \(formatter.string(from: endTime))"
+            }
+            return "Active now"
+        } else if scheduleManager.sessionEndTime != nil {
+            return "Waiting for activation..."
         }
         return scheduleManager.nextScheduledEvent
     }
@@ -294,7 +312,7 @@ struct MenuBarView: View {
             }) {
                 HStack {
                     Image(systemName: "power")
-                    Text("Quit NotToday")
+                    Text("Quit NotToday 2")
                     Spacer()
                 }
             }

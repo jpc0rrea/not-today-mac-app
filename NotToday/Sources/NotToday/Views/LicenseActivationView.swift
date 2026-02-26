@@ -19,7 +19,7 @@ struct LicenseActivationView: View {
                     .font(.system(size: 40))
                     .foregroundColor(.accentColor)
 
-                Text("Activate NotToday")
+                Text("Activate NotToday 2")
                     .font(.title2)
                     .fontWeight(.semibold)
 
@@ -99,7 +99,7 @@ struct LicenseActivationView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                Button("Purchase NotToday") {
+                Button("Purchase NotToday 2") {
                     licenseManager.showPurchaseDialog()
                 }
                 .buttonStyle(.link)

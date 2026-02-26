@@ -1,5 +1,9 @@
 import Foundation
 import Combine
+import UserNotifications
+import os.log
+
+private let logger = Logger(subsystem: "com.nottoday.app", category: "ScheduleManager")
 
 class ScheduleManager: ObservableObject {
     static let shared = ScheduleManager()
@@ -9,6 +13,12 @@ class ScheduleManager: ObservableObject {
     @Published var nextScheduledEvent: String = ""
     @Published var sessionEndTime: Date? = nil
     @Published var remainingTime: String = ""
+
+    /// Flag to track if there are pending schedule changes to sync when session ends
+    var hasPendingScheduleChanges: Bool = false
+
+    /// Track previous blocking state to detect transitions for notifications
+    private var previousBlockingState: Bool = false
 
     private var timer: Timer?
     private var countdownTimer: Timer?
@@ -20,6 +30,113 @@ class ScheduleManager: ObservableObject {
     init() {
         startMonitoring()
         updateStatus()
+        setupConfigurationObserver()
+    }
+
+    // MARK: - Notifications
+
+    func sendSessionStartNotification(minutes: Int) {
+        sendNotification(
+            title: "Focus Session Started",
+            body: "Blocking is now active for \(minutes) minutes. Stay focused!"
+        )
+    }
+
+    private func sendNotification(title: String, body: String) {
+        // Check permission status first
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            logger.info("Notification auth status: \(settings.authorizationStatus.rawValue)")
+
+            if settings.authorizationStatus == .authorized {
+                // Permission granted - send notification
+                let content = UNMutableNotificationContent()
+                content.title = title
+                content.body = body
+                content.sound = .default
+
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+
+                let request = UNNotificationRequest(
+                    identifier: UUID().uuidString,
+                    content: content,
+                    trigger: trigger
+                )
+
+                UNUserNotificationCenter.current().add(request) { error in
+                    if let error = error {
+                        logger.error("Notification error: \(error.localizedDescription)")
+                    } else {
+                        logger.info("Notification sent: \(title)")
+                    }
+                }
+            } else if settings.authorizationStatus == .notDetermined {
+                // Request permission again
+                logger.info("Notification permission not determined, requesting...")
+                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                    if granted {
+                        // Try again after permission granted
+                        self.sendNotification(title: title, body: body)
+                    }
+                }
+            } else {
+                logger.warning("Notifications not authorized (status: \(settings.authorizationStatus.rawValue))")
+            }
+        }
+    }
+
+    func sendSessionEndNotification() {
+        sendNotification(
+            title: "Focus Session Ended",
+            body: "Great work! Your blocking session has ended."
+        )
+    }
+
+    func sendScheduledBlockingStartNotification() {
+        sendNotification(
+            title: "Scheduled Blocking Active",
+            body: "Your scheduled focus time has started. Distracting sites are now blocked."
+        )
+    }
+
+    func sendScheduledBlockingEndNotification() {
+        sendNotification(
+            title: "Scheduled Blocking Ended",
+            body: "Your scheduled focus time has ended."
+        )
+    }
+
+    // MARK: - Pending Changes Sync
+
+    private func syncPendingChangesIfNeeded() {
+        guard hasPendingScheduleChanges else { return }
+
+        print("Syncing pending schedule changes to helper...")
+        blockingService.syncScheduleToHelper(configuration: configManager.configuration)
+        hasPendingScheduleChanges = false
+    }
+
+    // MARK: - Configuration Observer
+
+    /// Watch for configuration changes and sync to helper
+    private func setupConfigurationObserver() {
+        configManager.$configuration
+            .debounce(for: .seconds(1), scheduler: RunLoop.main)
+            .sink { [weak self] configuration in
+                self?.handleConfigurationChange(configuration: configuration)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Handle configuration changes - only sync if not currently blocking
+    private func handleConfigurationChange(configuration: Configuration) {
+        // Don't auto-sync during active blocking session - user must explicitly save
+        // and changes will be applied after session ends
+        if blockingService.isBlocking {
+            print("Configuration changed during active session - will sync after session ends")
+            return
+        }
+
+        blockingService.syncScheduleToHelper(configuration: configuration)
     }
 
     // MARK: - Monitoring
@@ -72,6 +189,7 @@ class ScheduleManager: ObservableObject {
 
     func checkAndUpdateBlocking() {
         guard configManager.configuration.enabled else {
+            checkForBlockingStateChange()
             updateStatus()
             return
         }
@@ -85,6 +203,16 @@ class ScheduleManager: ObservableObject {
             return
         }
 
+        // If helper is installed, it handles schedule-based blocking automatically
+        // We just need to sync the status and check for state changes
+        if HelperInstaller.shared.isHelperInstalled {
+            blockingService.syncBlockingStatus()
+            checkForBlockingStateChange()
+            updateStatus()
+            return
+        }
+
+        // Fallback: When helper is NOT installed, use the AppleScript approach
         let currentlyBlocking = blockingService.isBlocking
 
         if shouldBlock && !currentlyBlocking {
@@ -98,6 +226,7 @@ class ScheduleManager: ObservableObject {
                         minutes: minutesUntilEnd
                     ) { [weak self] success in
                         if success {
+                            self?.checkForBlockingStateChange()
                             self?.updateStatus()
                         }
                     }
@@ -112,7 +241,33 @@ class ScheduleManager: ObservableObject {
             blockingService.syncBlockingStatus()
         }
 
+        checkForBlockingStateChange()
         updateStatus()
+    }
+
+    /// Check if blocking state changed and send notification for scheduled blocking
+    private func checkForBlockingStateChange() {
+        let currentlyBlocking = blockingService.isBlocking
+
+        // Only send notifications for scheduled blocking (not manual focus sessions)
+        // Manual focus sessions send their own notifications
+        if !manualOverride && sessionEndTime == nil {
+            if currentlyBlocking && !previousBlockingState {
+                // Blocking just started (scheduled)
+                sendScheduledBlockingStartNotification()
+
+                // Sync any pending changes now that a new session started
+                // (they'll take effect after this session ends anyway)
+            } else if !currentlyBlocking && previousBlockingState {
+                // Blocking just ended (scheduled)
+                sendScheduledBlockingEndNotification()
+
+                // Sync any pending schedule changes now that session ended
+                syncPendingChangesIfNeeded()
+            }
+        }
+
+        previousBlockingState = currentlyBlocking
     }
 
     // MARK: - Manual Override
@@ -172,6 +327,9 @@ class ScheduleManager: ObservableObject {
                 // Start countdown timer only after password accepted
                 self.startCountdownTimer()
 
+                // Send notification that session started
+                self.sendSessionStartNotification(minutes: minutes)
+
                 print("Focus session started successfully")
                 // Notify that blocking status changed
                 NotificationCenter.default.post(name: NSNotification.Name("BlockingStatusChanged"), object: nil)
@@ -185,6 +343,12 @@ class ScheduleManager: ObservableObject {
                     self.remainingTime = ""
                     self.stopCountdownTimer()
                     self.manualOverride = false
+
+                    // Send notification that session ended
+                    self.sendSessionEndNotification()
+
+                    // Sync any pending schedule changes now that session is over
+                    self.syncPendingChangesIfNeeded()
 
                     // Sync status from hosts file (LaunchDaemon should have deactivated)
                     self.blockingService.syncBlockingStatus()

@@ -24,7 +24,7 @@ enum PaddleConfig {
     static let maxActivations = 3
 
     /// Product name shown in Paddle dialogs
-    static let productName = "NotToday"
+    static let productName = "NotToday 2"
 
     /// Vendor/Company name shown in Paddle dialogs
     static let vendorName = "Your Company Name"

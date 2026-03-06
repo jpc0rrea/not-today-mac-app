@@ -762,6 +762,8 @@ class SettingsWindowController {
 
 // MARK: - Preview
 
+#if canImport(PreviewsMacros)
 #Preview {
     SettingsView()
 }
+#endif

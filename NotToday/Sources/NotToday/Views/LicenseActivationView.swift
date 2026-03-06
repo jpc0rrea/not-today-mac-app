@@ -224,6 +224,7 @@ struct LicenseManagementView: View {
 
 // MARK: - Preview
 
+#if canImport(PreviewsMacros)
 #Preview("Activation") {
     LicenseActivationView()
 }
@@ -231,3 +232,4 @@ struct LicenseManagementView: View {
 #Preview("Management") {
     LicenseManagementView()
 }
+#endif

@@ -78,13 +78,23 @@ class HelperInstaller: ObservableObject {
     }
 
     private func getHelperSourcePath() -> String? {
-        // The helper should be in our app bundle
         let bundle = Bundle.main
+
+        // Check LaunchServices directory (where Xcode places privileged helpers)
+        if let bundlePath = bundle.bundlePath as String? {
+            let launchServicesPath = (bundlePath as NSString)
+                .appendingPathComponent("Contents/Library/LaunchServices/com.nottoday.helper")
+            if FileManager.default.fileExists(atPath: launchServicesPath) {
+                return launchServicesPath
+            }
+        }
+
+        // Try Resources directory
         if let helperPath = bundle.path(forResource: "com.nottoday.helper", ofType: nil) {
             return helperPath
         }
 
-        // Try auxiliary executables path
+        // Try auxiliary executables path (Contents/MacOS/)
         if let auxPath = bundle.path(forAuxiliaryExecutable: "com.nottoday.helper") {
             return auxPath
         }

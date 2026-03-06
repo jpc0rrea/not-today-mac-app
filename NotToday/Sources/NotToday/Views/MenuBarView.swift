@@ -323,6 +323,8 @@ struct MenuBarView: View {
 
 // MARK: - Preview
 
+#if canImport(PreviewsMacros)
 #Preview {
     MenuBarView()
 }
+#endif
